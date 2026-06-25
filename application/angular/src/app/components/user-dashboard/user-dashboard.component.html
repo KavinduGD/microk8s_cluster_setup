@@ -1,0 +1,396 @@
+<div class="min-h-screen bg-slate-950 text-slate-100 font-sans p-4 sm:p-6 lg:p-8 relative overflow-hidden">
+  <!-- Decorative background glow -->
+  <div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-violet-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+  <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-fuchsia-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+  <!-- Toast Messages -->
+  <div class="fixed top-6 right-6 z-50 flex flex-col gap-3 max-w-md w-full pointer-events-none">
+    <!-- Success Toast -->
+    @if (successMessage()) {
+      <div class="pointer-events-auto flex items-center p-4 bg-emerald-950/80 border border-emerald-500/30 text-emerald-200 rounded-2xl shadow-xl shadow-emerald-950/20 backdrop-blur-md transition-all duration-300 animate-slide-in">
+        <div class="p-2 bg-emerald-500/20 rounded-xl mr-3">
+          <svg class="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <p class="text-sm font-medium">{{ successMessage() }}</p>
+      </div>
+    }
+
+    <!-- Error Toast / Message -->
+    @if (errorMessage() && !errorMessage()?.includes('Spring Boot server')) {
+      <div class="pointer-events-auto flex items-center p-4 bg-rose-950/80 border border-rose-500/30 text-rose-200 rounded-2xl shadow-xl shadow-rose-950/20 backdrop-blur-md transition-all duration-300 animate-slide-in">
+        <div class="p-2 bg-rose-500/20 rounded-xl mr-3">
+          <svg class="w-5 h-5 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <p class="text-sm font-medium">{{ errorMessage() }}</p>
+      </div>
+    }
+  </div>
+
+  <div class="max-w-7xl mx-auto relative z-10">
+    <!-- Header -->
+    <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10 pb-6 border-b border-slate-800">
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20">Angular & Spring Boot</span>
+        </div>
+        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+          User Directory
+        </h1>
+        <p class="text-slate-400 mt-1">Manage user access records and server configurations</p>
+      </div>
+      <button 
+        (click)="openAddModal()" 
+        class="relative group overflow-hidden px-5 py-2.5 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white font-medium rounded-xl shadow-lg shadow-violet-500/20 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+      >
+        <span class="flex items-center gap-2">
+          <svg class="w-5 h-5 transition-transform duration-300 group-hover:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Add New User
+        </span>
+      </button>
+    </header>
+
+    <!-- Connection Error Warning (Persistent) -->
+    @if (errorMessage() && errorMessage()!.includes('Spring Boot server')) {
+      <div class="mb-8 p-5 bg-rose-950/40 border border-rose-500/30 rounded-2xl flex gap-4 text-rose-200 backdrop-blur-sm shadow-lg shadow-rose-950/10 animate-fade-in">
+        <div class="flex-shrink-0 p-2.5 bg-rose-500/20 rounded-xl h-11 w-11 flex items-center justify-center">
+          <svg class="w-6 h-6 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <div class="flex-1">
+          <h4 class="font-bold text-base text-rose-300">Backend Connection Error</h4>
+          <p class="text-sm mt-1 text-rose-300/80">{{ errorMessage() }}</p>
+          <button 
+            (click)="loadUsers()" 
+            class="mt-3 inline-flex items-center gap-2 px-3 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 rounded-lg text-xs font-semibold border border-rose-500/30 transition-colors"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.2" />
+            </svg>
+            Retry Connection
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Search & Filters -->
+    <div class="mb-8 flex flex-col sm:flex-row gap-4">
+      <div class="relative flex-1">
+        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </span>
+        <input 
+          type="text" 
+          [(ngModel)]="searchQuery" 
+          placeholder="Filter users by name or email..." 
+          class="w-full pl-11 pr-4 py-3 bg-slate-900/60 hover:bg-slate-900/80 focus:bg-slate-900 border border-slate-800 focus:border-violet-500/50 rounded-xl text-slate-200 placeholder-slate-500 outline-none transition-all focus:ring-2 focus:ring-violet-500/20"
+        />
+        @if (searchQuery()) {
+          <button 
+            (click)="searchQuery.set('')" 
+            class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-slate-300"
+          >
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    @if (loading() && users().length === 0) {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (i of [1, 2, 3]; track i) {
+          <div class="p-6 bg-slate-900/40 border border-slate-900 rounded-2xl animate-pulse">
+            <div class="flex items-center gap-4 mb-4">
+              <div class="w-12 h-12 rounded-full bg-slate-800"></div>
+              <div class="flex-1">
+                <div class="h-4 bg-slate-800 rounded w-2/3 mb-2"></div>
+                <div class="h-3 bg-slate-800 rounded w-1/2"></div>
+              </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-6">
+              <div class="w-16 h-8 bg-slate-800 rounded-lg"></div>
+              <div class="w-16 h-8 bg-slate-800 rounded-lg"></div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <!-- Empty State -->
+      @if (filteredUsers().length === 0) {
+        <div class="flex flex-col items-center justify-center p-12 text-center bg-slate-900/20 border border-dashed border-slate-800 rounded-3xl backdrop-blur-sm min-h-[300px]">
+          <div class="p-4 bg-slate-900/60 rounded-full text-slate-600 mb-4 border border-slate-800">
+            <svg class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-bold text-slate-300">No users found</h3>
+          <p class="text-slate-500 mt-1 max-w-sm">
+            @if (searchQuery()) {
+              No results match your search "{{ searchQuery() }}". Try adjusting your filter terms.
+            } @else {
+              The backend directory is empty. Get started by creating your first user profile.
+            }
+          </p>
+          @if (searchQuery()) {
+            <button 
+              (click)="searchQuery.set('')" 
+              class="mt-4 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold rounded-xl transition-all"
+            >
+              Clear Filter
+            </button>
+          } @else {
+            <button 
+              (click)="openAddModal()" 
+              class="mt-4 px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold rounded-xl transition-all shadow-md shadow-violet-500/10"
+            >
+              Add User
+            </button>
+          }
+        </div>
+      } @else {
+        <!-- User Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          @for (user of filteredUsers(); track user.id) {
+            <div class="group relative p-6 bg-slate-900/30 hover:bg-slate-900/50 border border-slate-800/80 hover:border-slate-700/80 rounded-2xl transition-all duration-300 hover:translate-y-[-2px] shadow-lg shadow-slate-950/10 hover:shadow-xl hover:shadow-violet-950/5">
+              <!-- Glow Accent on Hover -->
+              <div class="absolute inset-0 bg-gradient-to-r from-violet-500/0 via-violet-500/0 to-fuchsia-500/0 group-hover:from-violet-500/3 group-hover:to-fuchsia-500/3 rounded-2xl transition-colors duration-300 pointer-events-none"></div>
+
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex items-center gap-4">
+                  <!-- Avatar Circle -->
+                  <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-violet-600 to-fuchsia-600 flex items-center justify-center font-bold text-white shadow-md shadow-violet-500/20 text-lg uppercase flex-shrink-0">
+                    {{ user.name.charAt(0) }}
+                  </div>
+                  <div class="min-w-0">
+                    <h3 class="font-bold text-slate-200 text-lg truncate group-hover:text-white transition-colors">
+                      {{ user.name }}
+                    </h3>
+                    <p class="text-sm text-slate-400 truncate flex items-center gap-1.5 mt-0.5">
+                      <svg class="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      {{ user.email }}
+                    </p>
+                  </div>
+                </div>
+
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-800 text-slate-400 uppercase tracking-wider">
+                  ID: {{ user.id }}
+                </span>
+              </div>
+
+              <!-- Divider -->
+              <div class="my-5 border-t border-slate-800/80"></div>
+
+              <!-- Actions -->
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-slate-500 italic">User Record</span>
+                <div class="flex gap-2">
+                  <button 
+                    (click)="openEditModal(user)" 
+                    class="p-2 bg-slate-900 border border-slate-800 hover:border-violet-500/30 text-slate-400 hover:text-violet-400 rounded-xl transition-all"
+                    title="Edit User"
+                  >
+                    <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                  </button>
+                  <button 
+                    (click)="openDeleteConfirm(user)" 
+                    class="p-2 bg-slate-900 border border-slate-800 hover:border-rose-500/30 text-slate-400 hover:text-rose-400 rounded-xl transition-all"
+                    title="Delete User"
+                  >
+                    <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+
+  <!-- Create/Edit Modal Dialog -->
+  @if (isModalOpen()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <!-- Backdrop -->
+      <div 
+        (click)="closeModal()" 
+        class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity duration-300"
+      ></div>
+
+      <!-- Modal Content Card -->
+      <div class="relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl shadow-slate-950/50 p-6 sm:p-8 animate-modal-scale overflow-hidden">
+        <!-- Glow accents inside modal -->
+        <div class="absolute top-[-20%] right-[-20%] w-[50%] h-[50%] bg-violet-600/10 rounded-full blur-[80px] pointer-events-none"></div>
+
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-violet-500"></span>
+            {{ selectedUser() ? 'Edit Profile' : 'New User Profile' }}
+          </h2>
+          <button 
+            (click)="closeModal()" 
+            class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-lg transition-colors focus:outline-none"
+          >
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="space-y-6">
+          <!-- Name field -->
+          <div>
+            <label for="name" class="block text-sm font-semibold text-slate-300 mb-2">Full Name</label>
+            <input 
+              type="text" 
+              id="name" 
+              formControlName="name"
+              placeholder="e.g. Jane Doe" 
+              class="w-full px-4 py-3 bg-slate-950 border rounded-xl text-slate-200 placeholder-slate-600 outline-none transition-all focus:ring-2 focus:ring-violet-500/20"
+              [ngClass]="{
+                'border-slate-800 focus:border-violet-500/50': !userForm.get('name')?.touched || userForm.get('name')?.valid,
+                'border-rose-500/50 focus:ring-rose-500/10 focus:border-rose-500': userForm.get('name')?.touched && userForm.get('name')?.invalid
+              }"
+            />
+            @if (userForm.get('name')?.touched && userForm.get('name')?.errors) {
+              <div class="mt-2 text-xs text-rose-400 flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                @if (userForm.get('name')?.errors?.['required']) {
+                  Name is required.
+                }
+                @if (userForm.get('name')?.errors?.['minlength']) {
+                  Name must be at least 2 characters.
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Email field -->
+          <div>
+            <label for="email" class="block text-sm font-semibold text-slate-300 mb-2">Email Address</label>
+            <input 
+              type="email" 
+              id="email" 
+              formControlName="email"
+              placeholder="name@example.com" 
+              class="w-full px-4 py-3 bg-slate-950 border rounded-xl text-slate-200 placeholder-slate-600 outline-none transition-all focus:ring-2 focus:ring-violet-500/20"
+              [ngClass]="{
+                'border-slate-800 focus:border-violet-500/50': !userForm.get('email')?.touched || userForm.get('email')?.valid,
+                'border-rose-500/50 focus:ring-rose-500/10 focus:border-rose-500': userForm.get('email')?.touched && userForm.get('email')?.invalid
+              }"
+            />
+            @if (userForm.get('email')?.touched && userForm.get('email')?.errors) {
+              <div class="mt-2 text-xs text-rose-400 flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                @if (userForm.get('email')?.errors?.['required']) {
+                  Email is required.
+                }
+                @if (userForm.get('email')?.errors?.['email']) {
+                  Invalid email format.
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Actions -->
+          <div class="flex justify-end gap-3 pt-4 border-t border-slate-800/80">
+            <button 
+              type="button"
+              (click)="closeModal()" 
+              class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-xl transition-all"
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              [disabled]="loading() || userForm.invalid"
+              class="relative px-5 py-2.5 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white font-medium rounded-xl shadow-lg shadow-violet-500/10 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:scale-100 disabled:pointer-events-none"
+            >
+              @if (loading()) {
+                <span class="flex items-center gap-2">
+                  <svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Processing...
+                </span>
+              } @else {
+                {{ selectedUser() ? 'Save Changes' : 'Register User' }}
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Delete Confirmation Modal Dialog -->
+  @if (isDeleteConfirmOpen()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <!-- Backdrop -->
+      <div 
+        (click)="closeDeleteConfirm()" 
+        class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity duration-300"
+      ></div>
+
+      <!-- Dialog Card -->
+      <div class="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl shadow-slate-950/50 p-6 sm:p-8 animate-modal-scale overflow-hidden">
+        <div class="flex items-center gap-4 mb-4">
+          <div class="flex-shrink-0 p-3 bg-rose-500/10 rounded-2xl text-rose-400 border border-rose-500/20">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-white">Delete User Profile</h3>
+            <p class="text-xs text-slate-500">This action is permanent and cannot be undone</p>
+          </div>
+        </div>
+
+        <p class="text-slate-400 text-sm mb-6 leading-relaxed">
+          Are you sure you want to delete <span class="font-semibold text-slate-200">"{{ userToDelete()?.name }}"</span>? They will be permanently removed from the system registry.
+        </p>
+
+        <div class="flex justify-end gap-3">
+          <button 
+            (click)="closeDeleteConfirm()" 
+            class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-sm transition-all focus:outline-none"
+          >
+            Cancel
+          </button>
+          <button 
+            (click)="confirmDelete()" 
+            [disabled]="loading()"
+            class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-semibold rounded-xl text-sm shadow-lg shadow-rose-500/10 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100 focus:outline-none"
+          >
+            @if (loading()) {
+              Deleting...
+            } @else {
+              Delete Record
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
